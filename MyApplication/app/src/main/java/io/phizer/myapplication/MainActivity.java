@@ -82,7 +82,8 @@ public class MainActivity extends AppCompatActivity {
                     init();
                 } else if (lv.getItemIdAtPosition(position)==1) {
                     Intent i = new Intent(MainActivity.this, PhotoViewer.class);
-                    i.putExtra("name",((String)lv.getItemAtPosition(position)).substring(0,((String)lv.getItemAtPosition(position)).length()-4));
+                    //i.putExtra("name",((String)lv.getItemAtPosition(position)).substring(0,((String)lv.getItemAtPosition(position)).length()-4));
+                    i.putExtra("name",(String)lv.getItemAtPosition(position));
                     i.putExtra("path",mPath);
                     startActivity(i);
                 } else {

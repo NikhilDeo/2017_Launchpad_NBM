@@ -18,6 +18,8 @@ import android.widget.TextView;
 
 import com.github.chrisbanes.photoview.PhotoView;
 
+import java.net.URI;
+
 public class PhotoViewer extends AppCompatActivity {
 
     @Override
@@ -42,6 +44,6 @@ public class PhotoViewer extends AppCompatActivity {
             }
         });
         PhotoView photoView = (PhotoView) findViewById(R.id.photo_view);
-        photoView.setImageResource(R.drawable.viper);
+        photoView.setImageURI(Uri.parse(b.getString("path")+b.getString("name")));
     }
 }

@@ -83,6 +83,7 @@ public class FileAdapter extends BaseAdapter {
                     300));
             //imageView.setAdjustViewBounds(true);
             //imageView.setPadding(4, 4, 4, 4);
+            imageView.setClickable(true);
             imageView.setImageURI(Uri.parse(mPath+"/"+dataSource.get(position)));
             return imageView;
         } else {
