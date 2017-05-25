@@ -1,7 +1,10 @@
 package io.phizer.myapplication;
 
+        import android.Manifest;
+        import android.content.DialogInterface;
         import android.content.Intent;
         import android.content.pm.ActivityInfo;
+        import android.content.pm.PackageManager;
         import android.graphics.Bitmap;
         import android.graphics.BitmapFactory;
         import android.graphics.Matrix;
@@ -12,7 +15,10 @@ package io.phizer.myapplication;
         import android.os.Bundle;
         import android.support.constraint.ConstraintLayout;
         import android.support.constraint.ConstraintSet;
+        import android.support.v4.app.ActivityCompat;
+        import android.support.v4.content.ContextCompat;
         import android.support.v7.app.ActionBar;
+        import android.support.v7.app.AlertDialog;
         import android.support.v7.app.AppCompatActivity;
         import android.util.DisplayMetrics;
         import android.util.Log;
@@ -43,6 +49,7 @@ public class CameraActivity extends AppCompatActivity {
     private int orientationn;
     private Button cameraButton;
     private String rootDirectory;
+    private Button backButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,8 +72,8 @@ public class CameraActivity extends AppCompatActivity {
         rootDirectory = intent.getStringExtra("path");
 
         // Sets the view to be fullscreen, hiding navigation and status bars
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+       // getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+              //  WindowManager.LayoutParams.FLAG_FULLSCREEN);
         /*ActionBar actionBar = getSupportActionBar(); //or getSupportActionBar();
         actionBar.hide();*/
 
@@ -83,11 +90,20 @@ public class CameraActivity extends AppCompatActivity {
         parentLayout = (ConstraintLayout)findViewById(R.id.parentLayout);
         photoCountLabel = (TextView)findViewById(R.id.photoCounter);
         cameraButton = (Button)findViewById(R.id.button);
+        backButton = (Button)findViewById(R.id.doneButton);
         camera = checkDeviceCamera();
+        if (camera != null) {
+            setupCamera();
+        }
+    }
 
+    public void goBack() {
 
+    }
+    // Assumes this.camera != null
+    public void setupCamera() {
 
-        Display display = ((WindowManager)getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
+        Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
         previewView = new ImageSurfaceView(CameraActivity.this, camera);
 
         //set camera to continually auto-focus
@@ -139,7 +155,7 @@ public class CameraActivity extends AppCompatActivity {
             ConstraintSet set = new ConstraintSet();
 
             // Set Height
-            set.constrainHeight(R.id.previewLayout, (int)newHeight);
+            set.constrainHeight(R.id.previewLayout, (int) newHeight);
 
             // Center Vertically
             set.centerVertically(R.id.previewLayout, R.id.parentLayout);
@@ -153,23 +169,60 @@ public class CameraActivity extends AppCompatActivity {
 
 
         camera.setParameters(params);
-
-
     }
 
+    // Takes a picture, disables button
     public void captureImage(View v) {
         v.setEnabled(false);
         camera.takePicture(null, null, pictureCallback);
     }
 
-    private Camera checkDeviceCamera() {
-        Camera cam = null;
-        try {
-            cam = Camera.open();
-        } catch (Exception e) {
-            e.printStackTrace();;
+    // Requests camera permissions
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_DENIED) {
+            new AlertDialog.Builder(CameraActivity.this)
+                    .setTitle("Error")
+                    .setMessage("Please allow camera permissions")
+                    .setCancelable(false)
+                    .setPositiveButton("yes", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            // ask for permission again
+                            checkDeviceCamera();
+
+                        }
+                    })
+                    .setNegativeButton("no", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            // oh well
+
+                        }
+                    })
+                    .show();
+        } else {
+            this.camera = checkDeviceCamera();
+            setupCamera();
         }
-        return cam;
+    }
+    private Camera checkDeviceCamera() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_DENIED) {
+
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, 0);
+            return null;
+        } else {
+            Camera cam = null;
+
+            try {
+                cam = Camera.open();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return cam;
+        }
+
+
     }
 
     // Called after image is taken
